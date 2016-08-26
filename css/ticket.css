@@ -1,0 +1,150 @@
+/* larghezza del div che contiene la tabella (facoltativo): il valore potrebbe essere omesso se vale 100% oppure se viene definito altrove */
+.table-responsive {width: 100%;}
+
+/* stile del bordo per la tabella (facoltativo) */
+.table-responsive table {border: #ccc solid 1px;}
+
+/* istruzioni per le celle (alcune sono obbligatorie) */
+.table-responsive table td.ticket-table-title, .table-responsive table th.ticket-table-title {
+	min-width: 50px;
+	width: 20%;
+	border: #ccc solid 1px;
+	word-break: break-all;
+	text-align: left;
+	padding: 1%;
+	font-weight: bold;
+}
+.table-responsive table td.ticket-table-content, .table-responsive table th.ticket-table-content {
+	min-width: 50px;
+	width: 30%;
+	border: #ccc solid 1px;
+	word-break: break-all;
+	text-align: left;
+	padding: 1%;
+}
+/* larghezza delle immagini (facoltativo) */
+.table-responsive table td img {
+	max-width: 98%;
+	}
+
+* {
+ -webkit-box-sizing: border-box;
+ -moz-box-sizing: border-box;
+ box-sizing: border-box;
+ *behavior: url(boxsizing.htc);
+}
+
+img.scala {
+ max-width:100%;
+ height:auto;
+ width: auto;
+}
+
+.riga {
+ width: 100%;
+ max-width: 1200px;
+ min-width: 720px;
+ margin: 0 auto;
+ /*background: #fff;*/
+
+}
+
+.ticket-status-list{
+	color: #ffffff;
+	/*background-color: #f80606;*/
+	font-size: 1.3em;
+	font-weight: bold;
+}
+
+.ticket-status-title{
+	/*background-color: #f80606;*/
+	-webkit-border-radius: 10px;
+	-moz-border-radius: 10px;
+	border-radius: 10px;
+	padding-left: 10px;
+	padding-right: 10px;
+
+}
+
+.ticket-status-title_orange{
+	background-color: #ffb636;
+	-webkit-border-radius: 10px;
+	-moz-border-radius: 10px;
+	border-radius: 10px;
+	padding-left: 10px;
+	padding-right: 10px;
+
+}
+
+.ticket-status-title_green{
+	background-color: #00c618;
+	-webkit-border-radius: 10px;
+	-moz-border-radius: 10px;
+	border-radius: 10px;
+	padding-left: 10px;
+	padding-right: 10px;
+
+}
+
+.ticket-title-list{
+
+	font-size: 1.3em;
+	font-weight: bold;
+
+}
+
+.ticket-author-list{
+	font-size: 0.85em;
+	font-weight: bold;
+	font-style: italic;
+	color:#7e7e7e;
+	top: 5px;
+}
+
+.little-title{
+	font-size: 0.85em;
+	font-weight: bold;
+	font-style: italic;
+	color:#7e7e7e;
+
+}
+.footer-list{
+
+	border-bottom: 0.5px #7e7e7e solid;
+	margin-bottom: 10px;
+}
+
+.even{
+
+	background-color: #e2fbff;
+}
+
+.odd{
+
+	background-color: #e7e7e7;
+}
+
+.list_intestazione{
+
+	background-color: #e2fbff;
+}
+
+
+
+/*
+INEX BOOTSTRAP FIX
+*/
+.inexticket .input-group{
+	width: 100%;
+}
+.inexticket .top-buffer { margin-top:20px; }
+
+/* INEX TICKET LIST */
+.inexticket-list .row{
+	border-radius: 4px;
+	margin-bottom: 2px;
+	font-size: 0.85rem;
+}
+.inexticket-list  .label{
+	vertical-align: 2px;
+}
