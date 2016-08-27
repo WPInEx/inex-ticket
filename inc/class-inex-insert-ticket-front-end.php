@@ -12,7 +12,7 @@ class Inex_New_Ticket {
 
 	/**
 	 * Inex_New_Ticket::__construct()
-	 * Locked down the constructor, therefore the class cannot be externally instantiated
+	 *
 	 *
 	 * @param array $args various params some overidden by default
 	 *
@@ -29,9 +29,15 @@ class Inex_New_Ticket {
 	}
 
 
+	/**
+	 * ticket_front_end_form function.
+	 *
+	 * @access public
+	 * @return void
+	 */
 	public function ticket_front_end_form() {
 
-	if ( is_user_logged_in() && ( current_user_can( 'add_new_ticket' ) || current_user_can( 'manage_options' ) ) ){
+		if ( is_user_logged_in() && ( current_user_can( 'add_new_ticket' ) ) ){
 
 	?>
 
@@ -131,7 +137,7 @@ class Inex_New_Ticket {
 	</form>
 <?php
 
-	if(	$_POST	){
+	if(	isset( $_POST['inex_submit'] ) ){
 
 		$this->ticket_save_data();
 
@@ -198,113 +204,110 @@ class Inex_New_Ticket {
 
 	private function ticket_save_data() {
 
-	if ( empty( $_POST ) || !wp_verify_nonce( $_POST['new_ticket_nonce_field'], 'new_ticket_action' ) ){
+		if ( empty( $_POST ) || !wp_verify_nonce( $_POST['new_ticket_nonce_field'], 'new_ticket_action' ) ){
 
-	print 'Sorry, your nonce did not verify.';
-	exit;
+			print 'Sorry, your nonce did not verify.';
+			exit;
 
-	} else {
-
-
-	// Do some minor form validation to make sure there is content
-	if ( isset ( $_POST['inex_title'] ) ) {
-
-		$title = $_POST['inex_title'];
-
-	} else {
-
-		echo 'Please enter a title';
-		exit;
-	}
-
-	if ( isset ( $_POST['inex_description'] ) ) {
-
-		$description = wp_kses( $_POST['inex_description'], $allowedtags );
-
-	} else {
-		echo 'Please enter the content';
-		exit;
-	}
+		} else {
 
 
-	// Add the content of the form to $post as an array
-	$post = array(
-	'post_title' => wp_strip_all_tags( $title ),
-	'post_content' => $description,
-	'post_status' => 'publish',           // Choose: publish, preview, future, etc.
-	'post_type' => $_POST['post-type'],  // Use a custom post type if you want to
-	'comment_status' => 'closed',
-	'ping_status' => 'closed',
-	);
+			// Do some minor form validation to make sure there is content
+			if ( isset ( $_POST['inex_title'] ) ) {
 
-	$new_ticket_id = wp_insert_post( $post );  // http://codex.wordpress.org/Function_Reference/wp_insert_post
+				$title = $_POST['inex_title'];
 
-	$ticket_permalink = get_the_permalink( $new_ticket_id );
+			} else {
 
-	$ticket_title = get_the_title( $new_ticket_id );
+				echo 'Please enter a title';
+				exit;
+			}
 
-	//inizio invio email
+		if ( isset ( $_POST['inex_description'] ) ) {
+
+			$description = wp_kses( $_POST['inex_description'], $allowedtags );
+
+		} else {
+
+			echo 'Please enter the content';
+			exit;
+		}
 
 
-	$args = array(
+		// Add the content of the form to $post as an array
+		$post = array(
+		'post_title' => wp_strip_all_tags( $title ),
+		'post_content' => $description,
+		'post_status' => 'publish',           // Choose: publish, preview, future, etc.
+		'post_type' => $_POST['post-type'],  // Use a custom post type if you want to
+		'comment_status' => 'closed',
+		'ping_status' => 'closed',
+		);
 
-			'ticket_title' => wp_strip_all_tags( $title ),
-			'description' => $description,
-			'ticket_permalink' => $ticket_permalink,
-			);
+		$new_ticket_id = wp_insert_post( $post );  // http://codex.wordpress.org/Function_Reference/wp_insert_post
 
-	$inex_send_mail = new Inex_SendMail( $args, 'new');
-	$inex_send_mail->send_mail();
+		$ticket_permalink = get_the_permalink( $new_ticket_id );
 
-	//$args = array(
-	//
-	//'meta_key'     => 'ownticket',
-	//'meta_value'   => 1,
-	//'meta_compare' => '=',
-	//'orderby'      => 'login',
-	//'order'        => 'ASC',
-	//'fields'       => 'all'
-	//);
-	//$owner = get_users( $args );
+		$ticket_title = get_the_title( $new_ticket_id );
 
-	//foreach ( $owner as $ow ){
-	//
-	//	$to = $ow->user_email;
-	//
-	//	$subject = 'Nuovo ticket: ' . $ticket_title;
-	//
-	//			$message = 'Titolo del ticket: ' .  $ticket_title . ' Testo del ticket: ' .  $description . ' permalink: ' . $ticket_permalink;
-	//
-	//			wp_mail( $to, $subject, $message );
-	//}
-	// fine invio email
+		//inizio invio email
 
-	//Add ticket number
-	$inex_ticket_numerator = get_option('inex-ticket-numerator');
 
-	if ( ! $inex_ticket_numerator ){
+		$args = array(
 
-		$inex_ticket_numerator = 0;
-	}
+				'ticket_title' => wp_strip_all_tags( $title ),
+				'description' => $description,
+				'ticket_permalink' => $ticket_permalink,
+				);
 
-	$inex_ticket_numerator = $inex_ticket_numerator + 1;
+		$inex_send_mail = new Inex_SendMail( $args, 'new');
+		$inex_send_mail->send_mail();
 
-	update_option('inex-ticket-numerator', $inex_ticket_numerator );
+		//Add ticket number
+		$inex_ticket_numerator = get_option('inex-ticket-numerator');
 
-	//$new_ticket_number = date( 'ymd', time() ) . '-' .  str_pad( $inex_ticket_numerator, 6, "0", STR_PAD_LEFT );
-	$new_ticket_number = $inex_ticket_numerator;
-	update_post_meta( $new_ticket_id, 'inex_ticket_number', $new_ticket_number );
-	// end add tickt number
-	wp_set_object_terms( $new_ticket_id, array( (int)$_POST['priority'] ), 'inex_ticket_priority' );
-	wp_set_object_terms( $new_ticket_id, array( (int)$_POST['category'] ), 'inex-ticket' );
-	wp_set_object_terms( $new_ticket_id, array( (int)$_POST['status'] ), 'inex_ticket_status' );
-	wp_set_object_terms( $new_ticket_id, array( (int)$_POST['type'] ), 'inex_ticket_type' );
+		if ( ! $inex_ticket_numerator ){
 
-	//$location = home_url(); // redirect location, should be login page
-	$location = $ticket_permalink;
+			$inex_ticket_numerator = 0;
+		}
 
-	echo "<meta http-equiv='refresh' content='0;url=$location' />"; exit;
-	} // end IF
+		$inex_ticket_numerator = $inex_ticket_numerator + 1;
+
+		update_option('inex-ticket-numerator', $inex_ticket_numerator );
+
+		//$new_ticket_number = date( 'ymd', time() ) . '-' .  str_pad( $inex_ticket_numerator, 6, "0", STR_PAD_LEFT );
+		$new_ticket_number = $inex_ticket_numerator;
+		update_post_meta( $new_ticket_id, 'inex_ticket_number', $new_ticket_number );
+		// end add tickt number
+
+		if ( isset( $_POST['priority'] ) ){
+
+			wp_set_object_terms( $new_ticket_id, array( (int)$_POST['priority'] ), 'inex_ticket_priority' );
+			}
+
+		if ( isset( $_POST['category'] ) ){
+
+			wp_set_object_terms( $new_ticket_id, array( (int)$_POST['category'] ), 'inex-ticket' );
+
+			}
+
+		if ( isset( $_POST['status'] ) ){
+
+			wp_set_object_terms( $new_ticket_id, array( (int)$_POST['status'] ), 'inex_ticket_status' );
+
+			}
+
+		if ( isset( $_POST['type'] ) ){
+
+			wp_set_object_terms( $new_ticket_id, array( (int)$_POST['type'] ), 'inex_ticket_type' );
+
+			}
+
+		//$location = home_url(); // redirect location, should be login page
+		$location = $ticket_permalink;
+
+		echo "<meta http-equiv='refresh' content='0;url=$location' />"; exit;
+		} // end IF
 
 	}
 

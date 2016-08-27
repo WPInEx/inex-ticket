@@ -17,7 +17,7 @@ Text Domain: inex-ticket
 Domain Path: /languages
 */
 /*
-	Copyright 2016  Paolo Valenti & Michele Cipriani  (email : wolly66@gmail.com)
+	Copyright 2016  Paolo Valenti & Michele Cipriani  (email : wolly66@wpinex.com)
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -67,16 +67,29 @@ try {
 	}
 
 
-/* Creates new tickets roles and caps */
-//register_activation_hook( __FILE__, array( 'Inex_Ticket_Base', 'ticket_roles' ) );
-//register_activation_hook( __FILE__, array( 'Inex_Ticket_Base', 'ticket_caps' ) );
+/* Add add_new_ticket caps to standard WordPress roles */
+
+register_activation_hook( __FILE__, array( 'Inex_Ticket_Base', 'add_new_ticket_caps' ) );
 
 
+/**
+ * Inex_Ticket_Base class.
+ *
+ * @package inex ticket
+ *
+ * @since version 1.0
+ *
+ */
 class Inex_Ticket_Base {
 
 	private $options;
 	/**
 	 * Inex_ticket_Base::__construct()
+	 *
+	 *
+	 * @package inex ticket
+	 *
+	 * @since version 1.0
 	 *
 	 *
 	 * @param array $args various params some overidden by default
@@ -86,9 +99,11 @@ class Inex_Ticket_Base {
 
 	public function __construct() {
 
+		add_action( 'admin_init', array( $this, 'redirect_subscriber_users' ) );
+
 		$this->options =  get_option( 'inex-ticket' );
 
-		if ( empty( $this->options && empty( get_option( INEX_TICKET_PLUGIN_VERSION_NAME ) ) ) ){
+		if ( empty( $this->options ) && empty( get_option( INEX_TICKET_PLUGIN_VERSION_NAME ) ) ){
 
 			add_action( 'init', array( $this, 'first_install' ) );
 
@@ -102,8 +117,8 @@ class Inex_Ticket_Base {
 
 		//enqueue scripts
 
-		add_action( 'show_user_profile', array( $this, 'give_user_ticket_ownership' ) );
-		add_action( 'edit_user_profile', array( $this, 'give_user_ticket_ownership' ) );
+		add_action( 'show_user_profile', array( $this, 'promote_to_agent' ) );
+		add_action( 'edit_user_profile', array( $this, 'promote_to_agent' ) );
 		add_action( 'personal_options_update', array( $this, 'save_custom_user_profile_fields' ) );
 		add_action( 'edit_user_profile_update', array( $this, 'save_custom_user_profile_fields' ) );
 
@@ -120,6 +135,11 @@ class Inex_Ticket_Base {
 
 	/**
 	 * first_install function.
+	 *
+	 *
+	 * @package inex ticket
+	 *
+	 * @since version 1.0
 	 *
 	 * @access public
 	 * @return void
@@ -142,6 +162,7 @@ class Inex_Ticket_Base {
 		  	'listing-status' => (int)$status_close['term_id'],
 		  	'listing-tickets-per-page' => 20,
 		  	'listing-ticket-replies-per-page' => 20,
+		  	'sorting' => 'DESC',
 		  	'background' => Array(
 		  	        $status_close['term_id'] => '#81d742', //close
 		  	        $status_new['term_id'] => '#dd3333', //new
@@ -159,6 +180,11 @@ class Inex_Ticket_Base {
 
 	/**
 	 * update_UTILITY_check function.
+	 *
+	 *
+	 * @package inex ticket
+	 *
+	 * @since version 1.0
 	 *
 	 * @access public
 	 * @return void
@@ -179,103 +205,75 @@ class Inex_Ticket_Base {
 	/**
 	 * do_update function.
 	 *
+	 * @package inex ticket
+	 *
+	 * @since version 1.0
+	 *
+	 *
 	 * @access private
 	 *
 	 */
 	 public function do_update(){
 
 	   	//Update option
-	    //update_option( INEX_TICKET_PLUGIN_VERSION_NAME , INEX_TICKET_PLUGIN_VERSION );
+	    update_option( INEX_TICKET_PLUGIN_VERSION_NAME , INEX_TICKET_PLUGIN_VERSION );
 	 }
 
-	public static function ticket_roles(){
 
-		/* Caps list
-		 *
-		 * all_tickets_moderator can see and modify all tickets
-		 *
-		 * company_tickets_editor can see and update his tickets and all tickets of his company, can change company users permissions
-		 *
-		 * add_new_ticket
-		 *
-		 * company_tickets_others_view_post_comment can post tickets, can see others company ticket, can post comments in others company ticket
-		 *
-		 * company_tickets_others_view_comments can post tickets, can see others company tickets, cannot post comments in others company tivket
-		 *
-		 * company_tickets_others_no_view can post tickets, cannot see others company tickets, cannot post comments in others company tivket
-		 *
-		 */
-
-		/* Roles list
-		 *
-		 * global_tickets_editor has all caps
-		 *
-		 * tickets_editor caps: company_tickets_editor,add_new_ticket,company_tickets_others_view_post_comment,company_tickets_others_view_comments, company_tickets_others_no_view
-		 *
-		 * ticket_author caps: add_new_ticket,company_tickets_others_view_post_comment,company_tickets_others_view_comments, company_tickets_others_no_view
-		 *
-		 * ticket_collaborator caps: add_new_ticket,company_tickets_others_view_comments, company_tickets_others_no_view
-		 *
-		 * ticket_subscriber caps: add_new_ticket, company_tickets_others_no_view
-		 *
-		 */
-
-		//New roles creation
-		add_role( 'global_tickets_editor', 'Global tickets editor', array( 'read' => true ) );
-
-		add_role( 'tickets_editor', 'Tickets editor', array( 'read' => true ) );
-
-		add_role( 'ticket_author', 'Ticket author', array( 'read' => true ) );
-
-		add_role( 'ticket_collaborator', 'Ticket collaborator', array( 'read' => true ) );
-
-		add_role( 'ticket_subscriber', 'Ticket subscriber', array( 'read' => true ) );
-
-		//add new caps to new roles
-	}
-
-	public static function ticket_caps(){
+	/**
+	 * add_new_ticket_caps function.
+	 *
+	 * @package inex ticket
+	 *
+	 * @since version 1.0
+	 *
+	 *
+	 * @access public
+	 * @static
+	 * @return void
+	 */
+	public static function add_new_ticket_caps(){
 
 		//add new caps to new roles
 
-		// gets the global_tickets_editor role
-		$role = get_role( 'global_tickets_editor' );
-		$role->add_cap( 'all_tickets_moderator' );
-		$role->add_cap( 'company_tickets_editor' );
+		// gets the administrator role
+		$role = get_role( 'administrator' );
 		$role->add_cap( 'add_new_ticket' );
-		$role->add_cap( 'company_tickets_others_view_post_comment' );
-		$role->add_cap( 'company_tickets_others_view_comments' );
-		$role->add_cap( 'company_tickets_others_no_view' );
 
-		// gets the tickets_editor role
-		$role = get_role( 'tickets_editor' );
-		$role->add_cap( 'company_tickets_editor' );
+		// gets the editor role
+		$role = get_role( 'editor' );
 		$role->add_cap( 'add_new_ticket' );
-		$role->add_cap( 'company_tickets_others_view_post_comment' );
-		$role->add_cap( 'company_tickets_others_view_comments' );
-		$role->add_cap( 'company_tickets_others_no_view' );
 
-		// gets the ticket_author role
-		$role = get_role( 'ticket_author' );
+		// gets the author role
+		$role = get_role( 'author' );
 		$role->add_cap( 'add_new_ticket' );
-		$role->add_cap( 'company_tickets_others_view_post_comment' );
-		$role->add_cap( 'company_tickets_others_view_comments' );
-		$role->add_cap( 'company_tickets_others_no_view' );
 
-		// gets the ticket_collaborator role
-		$role = get_role( 'ticket_collaborator' );
+		// gets the collaborator role
+		$role = get_role( 'contributor' );
 		$role->add_cap( 'add_new_ticket' );
-		$role->add_cap( 'company_tickets_others_view_comments' );
-		$role->add_cap( 'company_tickets_others_no_view' );
 
-		// gets the ticket_subscriber role
-		$role = get_role( 'ticket_subscriber' );
+
+		// gets the subscriber role
+		$role = get_role( 'subscriber' );
 		$role->add_cap( 'add_new_ticket' );
-		$role->add_cap( 'company_tickets_others_no_view' );
+
 
 	}
 
-	public function give_user_ticket_ownership( $user ){
+
+	/**
+	 * promote_to_agent function.
+	 *
+	 * @package inex ticket
+	 *
+	 * @since version 1.0
+	 *
+	 *
+	 * @access public
+	 * @param mixed $user
+	 * @return void
+	 */
+	public function promote_to_agent( $user ){
 
 		if ( current_user_can( 'create_users' ) ) {
 
@@ -284,25 +282,30 @@ class Inex_Ticket_Base {
 
 		?>
 
-		<h3><?php _e( 'User can own ticket', 'inex-ticket' ); ?></h3>
+		<h3><?php _e( 'Ticket Agents', 'inex-ticket' ); ?></h3>
 
-			<?php _e( 'User can own ticket', 'inex-ticket' ); ?> <input type="checkbox" name="ownticket" value="1" <?php checked( $selected, 1 ); ?> />
+			<?php _e( 'This user is a Ticket Agent', 'inex-ticket' ); ?> <input type="checkbox" name="ownticket" value="1" <?php checked( $selected, 1 ); ?> />
 
 
 		<?php	}
 
 	}
 
+
+	/**
+	 * save_custom_user_profile_fields function.
+	 *
+	 * @package inex ticket
+	 *
+	 * @since version 1.0
+	 *
+	 *
+	 * @access public
+	 * @param mixed $user
+	 * @return void
+	 */
 	public function save_custom_user_profile_fields( $user ) {
 
-		if ( isset( $_POST['associa_company'] ) && $_POST['associa_company'] != '-1' ) {
-
-			update_user_meta( $user, 'company_associata', $_POST['associa_company'] );
-
-		} else {
-
-			delete_user_meta( $user, 'company_associata' );
-		}
 
 		if ( isset( $_POST['ownticket'] ) && 1 == $_POST['ownticket'] ) {
 
@@ -316,6 +319,11 @@ class Inex_Ticket_Base {
 
 	/**
      * Enqueue plugin style-file
+     *
+	 * @package inex ticket
+	 *
+	 * @since version 1.0
+	 *
      */
     function ticket_css_frontend() {
         // Respects SSL, Style.css is relative to the current file
@@ -329,10 +337,10 @@ class Inex_Ticket_Base {
     function bootstrap_frontend() {
     // Check if Bootstrap is loaded, if not queue up script
 		if ( ! is_admin() ){
-		if( !wp_script_is('bootstrap','enqueued') && !wp_style_is('bootstrap','queue') && !wp_style_is('bootstrap','done') ) {
-			wp_register_style( 'bootstrap', plugins_url('/libs/bootstrap/css/bootstrap.min.css' , __FILE__ ));
+		if( ! wp_script_is( 'bootstrap', 'enqueued' ) && ! wp_style_is( 'bootstrap', 'queue' ) && ! wp_style_is( 'bootstrap', 'done' ) ) {
+			wp_register_style( 'bootstrap', plugins_url('/libs/bootstrap/css/bootstrap.min.css' , __FILE__ ) );
 	        wp_enqueue_style( 'bootstrap' );
-	        wp_register_style( 'bootstrap-theme', plugins_url('/libs/bootstrap/css/bootstrap-theme.min.css' , __FILE__ ));
+	        wp_register_style( 'bootstrap-theme', plugins_url('/libs/bootstrap/css/bootstrap-theme.min.css' , __FILE__ ) );
 	       	wp_enqueue_style( 'bootstrap-theme' );
 
 	        wp_enqueue_script( 'bootstrap','' . INEX_TICKET_PLUGIN_DIR . 'libs/bootstrap/js/bootstrap.min.js', array('jquery'), time(), true );
@@ -340,6 +348,18 @@ class Inex_Ticket_Base {
 		}
 	}
 
+
+	/**
+	 * bootstrap_meta function.
+	 *
+	 * @package inex ticket
+	 *
+	 * @since version 1.0
+	 *
+	 *
+	 * @access public
+	 * @return void
+	 */
 	function bootstrap_meta(){
 			/*echo '
 				<!-- Start INEX Ticket -->
@@ -407,6 +427,16 @@ class Inex_Ticket_Base {
 		$add_pages = new Inex_Add_Page( $pages );
 
 	}
+
+	public function redirect_subscriber_users() {
+
+		    if ( ! current_user_can( 'publish_posts' ) && '/wp-admin/admin-ajax.php' != $_SERVER['PHP_SELF'] ) {
+
+		        wp_redirect( home_url() );
+		        exit;
+
+		    }
+		}
 
 }// close the class
 
