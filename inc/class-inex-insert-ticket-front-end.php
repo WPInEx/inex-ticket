@@ -256,29 +256,6 @@ class Inex_New_Ticket {
 	$inex_send_mail = new Inex_SendMail( $args, 'new');
 	$inex_send_mail->send_mail();
 
-	//$args = array(
-	//
-	//'meta_key'     => 'ownticket',
-	//'meta_value'   => 1,
-	//'meta_compare' => '=',
-	//'orderby'      => 'login',
-	//'order'        => 'ASC',
-	//'fields'       => 'all'
-	//);
-	//$owner = get_users( $args );
-
-	//foreach ( $owner as $ow ){
-	//
-	//	$to = $ow->user_email;
-	//
-	//	$subject = 'Nuovo ticket: ' . $ticket_title;
-	//
-	//			$message = 'Titolo del ticket: ' .  $ticket_title . ' Testo del ticket: ' .  $description . ' permalink: ' . $ticket_permalink;
-	//
-	//			wp_mail( $to, $subject, $message );
-	//}
-	// fine invio email
-
 	//Add ticket number
 	$inex_ticket_numerator = get_option('inex-ticket-numerator');
 
@@ -295,10 +272,29 @@ class Inex_New_Ticket {
 	$new_ticket_number = $inex_ticket_numerator;
 	update_post_meta( $new_ticket_id, 'inex_ticket_number', $new_ticket_number );
 	// end add tickt number
-	wp_set_object_terms( $new_ticket_id, array( (int)$_POST['priority'] ), 'inex_ticket_priority' );
-	wp_set_object_terms( $new_ticket_id, array( (int)$_POST['category'] ), 'inex-ticket' );
-	wp_set_object_terms( $new_ticket_id, array( (int)$_POST['status'] ), 'inex_ticket_status' );
-	wp_set_object_terms( $new_ticket_id, array( (int)$_POST['type'] ), 'inex_ticket_type' );
+
+	if ( isset( $_POST['priority'] ) ){
+
+		wp_set_object_terms( $new_ticket_id, array( (int)$_POST['priority'] ), 'inex_ticket_priority' );
+		}
+
+	if ( isset( $_POST['category'] ) ){
+
+		wp_set_object_terms( $new_ticket_id, array( (int)$_POST['category'] ), 'inex-ticket' );
+
+		}
+
+	if ( isset( $_POST['status'] ) ){
+
+		wp_set_object_terms( $new_ticket_id, array( (int)$_POST['status'] ), 'inex_ticket_status' );
+
+		}
+
+	if ( isset( $_POST['type'] ) ){
+
+		wp_set_object_terms( $new_ticket_id, array( (int)$_POST['type'] ), 'inex_ticket_type' );
+
+		}
 
 	//$location = home_url(); // redirect location, should be login page
 	$location = $ticket_permalink;
