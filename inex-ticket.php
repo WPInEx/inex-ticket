@@ -207,7 +207,7 @@ class Inex_Ticket_Base {
 		$role->add_cap( 'add_new_ticket' );
 
 		// gets the collaborator role
-		$role = get_role( 'collaborator' );
+		$role = get_role( 'contributor' );
 		$role->add_cap( 'add_new_ticket' );
 
 
