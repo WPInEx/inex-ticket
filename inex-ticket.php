@@ -17,7 +17,7 @@ Text Domain: inex-ticket
 Domain Path: /languages
 */
 /*
-	Copyright 2016  Paolo Valenti & Michele Cipriani  (email : wolly66@gmail.com)
+	Copyright 2016  Paolo Valenti & Michele Cipriani  (email : wolly66@wpinex.com)
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -72,11 +72,24 @@ try {
 register_activation_hook( __FILE__, array( 'Inex_Ticket_Base', 'add_new_ticket_caps' ) );
 
 
+/**
+ * Inex_Ticket_Base class.
+ *
+ * @package inex ticket
+ *
+ * @since version 1.0
+ *
+ */
 class Inex_Ticket_Base {
 
 	private $options;
 	/**
 	 * Inex_ticket_Base::__construct()
+	 *
+	 *
+	 * @package inex ticket
+	 *
+	 * @since version 1.0
 	 *
 	 *
 	 * @param array $args various params some overidden by default
@@ -85,6 +98,8 @@ class Inex_Ticket_Base {
 	 */
 
 	public function __construct() {
+
+		add_action( 'admin_init', array( $this, 'redirect_subscriber_users' ) );
 
 		$this->options =  get_option( 'inex-ticket' );
 
@@ -120,6 +135,11 @@ class Inex_Ticket_Base {
 
 	/**
 	 * first_install function.
+	 *
+	 *
+	 * @package inex ticket
+	 *
+	 * @since version 1.0
 	 *
 	 * @access public
 	 * @return void
@@ -161,6 +181,11 @@ class Inex_Ticket_Base {
 	/**
 	 * update_UTILITY_check function.
 	 *
+	 *
+	 * @package inex ticket
+	 *
+	 * @since version 1.0
+	 *
 	 * @access public
 	 * @return void
 	 */
@@ -180,6 +205,11 @@ class Inex_Ticket_Base {
 	/**
 	 * do_update function.
 	 *
+	 * @package inex ticket
+	 *
+	 * @since version 1.0
+	 *
+	 *
 	 * @access private
 	 *
 	 */
@@ -190,6 +220,18 @@ class Inex_Ticket_Base {
 	 }
 
 
+	/**
+	 * add_new_ticket_caps function.
+	 *
+	 * @package inex ticket
+	 *
+	 * @since version 1.0
+	 *
+	 *
+	 * @access public
+	 * @static
+	 * @return void
+	 */
 	public static function add_new_ticket_caps(){
 
 		//add new caps to new roles
@@ -218,6 +260,19 @@ class Inex_Ticket_Base {
 
 	}
 
+
+	/**
+	 * promote_to_agent function.
+	 *
+	 * @package inex ticket
+	 *
+	 * @since version 1.0
+	 *
+	 *
+	 * @access public
+	 * @param mixed $user
+	 * @return void
+	 */
 	public function promote_to_agent( $user ){
 
 		if ( current_user_can( 'create_users' ) ) {
@@ -236,6 +291,19 @@ class Inex_Ticket_Base {
 
 	}
 
+
+	/**
+	 * save_custom_user_profile_fields function.
+	 *
+	 * @package inex ticket
+	 *
+	 * @since version 1.0
+	 *
+	 *
+	 * @access public
+	 * @param mixed $user
+	 * @return void
+	 */
 	public function save_custom_user_profile_fields( $user ) {
 
 
@@ -251,6 +319,11 @@ class Inex_Ticket_Base {
 
 	/**
      * Enqueue plugin style-file
+     *
+	 * @package inex ticket
+	 *
+	 * @since version 1.0
+	 *
      */
     function ticket_css_frontend() {
         // Respects SSL, Style.css is relative to the current file
@@ -275,6 +348,18 @@ class Inex_Ticket_Base {
 		}
 	}
 
+
+	/**
+	 * bootstrap_meta function.
+	 *
+	 * @package inex ticket
+	 *
+	 * @since version 1.0
+	 *
+	 *
+	 * @access public
+	 * @return void
+	 */
 	function bootstrap_meta(){
 			/*echo '
 				<!-- Start INEX Ticket -->
@@ -342,6 +427,16 @@ class Inex_Ticket_Base {
 		$add_pages = new Inex_Add_Page( $pages );
 
 	}
+
+	public function redirect_subscriber_users() {
+
+		    if ( ! current_user_can( 'publish_posts' ) && '/wp-admin/admin-ajax.php' != $_SERVER['PHP_SELF'] ) {
+
+		        wp_redirect( home_url() );
+		        exit;
+
+		    }
+		}
 
 }// close the class
 
