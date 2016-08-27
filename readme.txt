@@ -70,5 +70,4 @@ You can also get some basic documentation on [InEx website](https://wpinex.com/d
 = 1.0 =
 
 * Release Date: Semptember 1st, 2016
-
-* First Release
+	>First Release
