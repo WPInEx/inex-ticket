@@ -6,15 +6,26 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /**
  * Inex_Ticket_Reply_Loop class.
+ *
+ * @package inex ticket
+ *
+ * @since version 1.0
+ *
  */
 class Inex_Ticket_Reply_Loop {
 
 	var $ticket_id = '';
 	var $id_user = '';
 	private $options = '';
+	var $write = '';
 
 	/**
 	 * Inex_Check_ticket_Permissions::__construct()
+	 *
+	 *
+	 * @package inex ticket
+	 *
+	 * @since version 1.0
 	 *
 	 *
 	 * @param array $args various params some overidden by default
@@ -25,6 +36,14 @@ class Inex_Ticket_Reply_Loop {
 	public function __construct( $id_ticket, $user_id ) {
 
 		$this->id_user = absint( $user_id );
+
+		if ( 0 == $this->id_user || empty( $this->id_user ) ){
+			$this->write = false;
+		} else {
+
+			$this->write = true;
+
+		}
 		$this->ticket_id = absint( $id_ticket );
 		$this->options = get_option( 'inex-ticket' );
 
@@ -32,6 +51,11 @@ class Inex_Ticket_Reply_Loop {
 
 	/**
 	 * reply_loop function.
+	 *
+	 *
+	 * @package inex ticket
+	 *
+	 * @since version 1.0
 	 *
 	 * @access public
 	 * @return $reply_loop_render
@@ -94,13 +118,16 @@ class Inex_Ticket_Reply_Loop {
 				endif;
 				wp_reset_postdata();
 
+			$term_status = get_the_terms( $this->ticket_id, 'inex_ticket_status' );
+			$term_id_status = (int)$term_status[0]->term_id;
+
 			$standard_single_permissions = array(
 									'read' => true,
-									'write' => true,
+									'write' => $this->write,
 									'view_only_your_tickets' => false,
 									'pubblico' => null,
 									'user_id' => (int)$this->id_user,
-									'status' => null,
+									'status' => $term_id_status,
 									'ticket_id' => (int)$this->ticket_id,
 									'company_id' => null,
 									);
@@ -113,7 +140,7 @@ class Inex_Ticket_Reply_Loop {
 
 			$ticket_is_open = $ticket_status->check_ticket_status();
 
-			if ( true == $ticket_is_open && 'write' == $user_can_write ){
+			if ( true == $ticket_is_open && true == $user_can_write ){
 
 				$ticket_meta = new Inex_Ticket_Meta( $filtered_single_permissions['ticket_id'], $filtered_single_permissions['user_id'] );
 
@@ -184,6 +211,11 @@ class Inex_Ticket_Reply_Loop {
 
 	/**
 	 * save_reply function.
+	 *
+	 *
+	 * @package inex ticket
+	 *
+	 * @since version 1.0
 	 *
 	 * @access private
 	 * @return void
