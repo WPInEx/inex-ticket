@@ -3,6 +3,16 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit; // Exit if accessed directly
 }
 
+
+
+/**
+ * Inex_Check class.
+ *
+ * @package inex ticket
+ *
+ * @since version 1.0
+ *
+ */
 class Inex_Check {
 
 	var $id_user = '';
@@ -19,6 +29,11 @@ class Inex_Check {
 	 * Inex_Check::__construct()
 	 *
 	 *
+	 * @package inex ticket
+	 *
+	 * @since version 1.0
+	 *
+	 *
 	 * @param array $args various params some overidden by default
 	 *
 	 * @return
@@ -31,93 +46,71 @@ class Inex_Check {
 		$this->id_ticket = absint( $args['ticket_id'] );
 		$this->pubblico = $args['pubblico'];
 		$this->read = $args['read'];
-		$this->write = $args['write'];
+
+		if ( false == $args['write'] || true == $args['write'] ){
+
+			$this->write = $args['write'];
+
+		} else {
+
+			$this->write = false;
+		}
+
 		$this->company_id = $args['company_id'];
-		$this->view_only_your_tickets = $args['view_only_your_tickets'];
+
+		if ( false == $args['view_only_your_tickets'] || true == $args['view_only_your_tickets'] ){
+
+			$this->view_only_your_tickets = $args['view_only_your_tickets'];
+
+		} else {
+
+			$this->view_only_your_tickets = false;
+		}
 
 
 		$this->options = get_option( 'inex-ticket' );
 
 	}
 
+	/**
+	 * check_user_permissions function.
+	 *
+	 *
+	 * @package inex ticket
+	 *
+	 * @since version 1.0
+	 *
+	 * @access public
+	 * @return void
+	 */
 	public function check_user_permissions(){
 
+		if ( false == $this->write ){
 
-		$author_id = get_the_author_meta( 'ID' );
+			$user_can_write = false;
 
+		} else {
 
-		if ( $this->id_user != $author_id ){
-
-		$company_author = get_user_meta( $author_id, 'company_associata', true );
-		$company_user = get_user_meta( $this->id_user, 'company_associata', true );
-
-
-
-		if ( $company_author == $company_user || current_user_can( 'manage_options' ) ){
-
-			//echo 'Ciao Autore: ' . $company_author . ' - User: ' . $company_user;
-
-		//wp_die();
-		switch ( $this->ticket_status ) {
-
-			case 'write_comment':
-				if ( user_can( $this->id_user, 'company_tickets_others_view_post_comment' ) || current_user_can( 'manage_options' ) ){
-
-					$write = 'write';
-
-				return $write;
-
-			} else {
-
-				return false;
-			}
-
-			break;
-
-			case 'view_comment':
-
-				if ( user_can( $this->id_user, 'company_tickets_others_view_comments' ) ||current_user_can( 'manage_options' ) ){
-
-					$read = 'read';
-				return $read;
-
-			} else {
-
-				return false;
-			}
-			break;
-
-			default:
-				return false;
-			break;
+			$user_can_write = true;
 		}
 
-		}//end check company
-
-		} else {//end if different users
-
-			switch ( $this->ticket_status ) {
-
-				case 'write_comment':
-					$write = 'write';
-					return $write;
-				break;
-				case 'view_comment':
-					$read = 'read';
-					return $read;
-				break;
-
-			}
-
-		}
-
+		return $user_can_write;
 	}
 
+	/**
+	 * check_ticket_status function.
+	 *
+	 *
+	 * @package inex ticket
+	 *
+	 * @since version 1.0
+	 *
+	 * @access public
+	 * @return void
+	 */
 	public function check_ticket_status(){
 
-		$term_status = get_the_terms( $this->id_ticket, 'inex_ticket_status' );
-
-			if ( (int)$this->options['status'] == (int)$term_status[0]->term_id ){
+			if ( (int)$this->options['status'] == (int)$this->ticket_status ){
 
 				$this->ticked_is_open = false;
 
@@ -130,13 +123,6 @@ class Inex_Check {
 		return $this->ticked_is_open;
 
 	}
-
-	private function sanitize_args(){
-
-
-	}
-
-
 
 }// chiudo la classe
 
