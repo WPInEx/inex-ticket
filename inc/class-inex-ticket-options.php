@@ -73,7 +73,7 @@ class Inex_Ticket_Options
         $this->options = get_option( 'inex-ticket' );
         ?>
         <div class="wrap">
-            <h2><?php _e( 'Tickets Settings', 'inex-ticket' ) ?></h2>
+            <h2><?php _e( 'Tickets Settings', 'inex-ticket' ) ?> Version <?php echo get_option( INEX_TICKET_PLUGIN_VERSION_NAME ) ?> </h2>
 
 
             <form method="post" action="options.php">
@@ -198,6 +198,14 @@ class Inex_Ticket_Options
             'inex-03'
         );
 
+        add_settings_field(
+            'sorting-ticket-replies',
+            __( 'Sorting tickets replies', 'inex-ticket' ),
+            array( $this, 'sorting_ticket_replies_callback' ),
+            'inex-ticket',
+            'inex-03'
+        );
+
 		add_settings_field(
             'listing-status-bg-color',
             __( 'Choose color for each status', 'inex-ticket' ),
@@ -301,6 +309,16 @@ class Inex_Ticket_Options
         if( isset( $input['listing-ticket-replies-per-page'] ) ){
 
             $new_input['listing-ticket-replies-per-page'] = absint( $input['listing-ticket-replies-per-page'] );
+
+        }
+
+        if( isset( $input['sorting'] ) ){
+
+	        if ( 'ASC' == $input['sorting'] || 'DESC' == $input['sorting'] ){
+
+            	$new_input['sorting'] = $input['sorting'] ;
+
+            }
 
         }
 
@@ -701,6 +719,16 @@ class Inex_Ticket_Options
             '<input type="text" id="listing-ticket-per-page" name="inex-ticket[listing-ticket-replies-per-page]" value="%s" />',
             isset( $this->options['listing-ticket-replies-per-page'] ) ? esc_attr( $this->options['listing-ticket-replies-per-page']) : ''
         );
+
+    }
+
+
+    public function sorting_ticket_replies_callback(){
+
+	    print '<ul>
+	    		<li><input type="radio" name="inex-ticket[sorting]" value="ASC" ' . checked( $this->options["sorting"], "ASC", false ) . '/> ' . __( 'Sort ascendind order (First older reply)', 'inex-ticket' ) . '</li>
+	    		<li><input type="radio" name="inex-ticket[sorting]" value="DESC" ' . checked( $this->options["sorting"], "DESC", false ) . '/> ' . __( 'Sort descending order (First newer reply)', 'inex-ticket' ) . '</li>
+				</ul>';
 
     }
 
